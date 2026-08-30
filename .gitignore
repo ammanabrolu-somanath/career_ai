@@ -40,3 +40,28 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+# Node modules
+node_modules/
+
+# Build files
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE files
+.vscode/
+
+# OS files
+.DS_Store
