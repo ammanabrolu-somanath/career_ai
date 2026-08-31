@@ -200,7 +200,12 @@ def validate_profile(profile):
     normalized_interests = _normalize_list(
         interests_for_generic_check, _INTEREST_LOWER_MAP, "interest", errors, warnings, suggestions
     )
-    if interests_raw and not normalized_interests:
+    # Use interests_for_generic_check (not interests_raw) here: if every
+    # provided interest was a Session 5 simulated contradiction-pair value,
+    # interests_for_generic_check is empty and this must NOT fire - those
+    # values are handled entirely by the contradictory-preference branch
+    # above, which already reports them as a warning, not a blocking error.
+    if interests_for_generic_check and not normalized_interests:
         errors.append("None of the provided interests were recognized by the system.")
 
     normalized_score = None

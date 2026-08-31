@@ -46,6 +46,13 @@ STUDENTS = {
         "interests": ["Technology"],
         "academic_score": 60,
     },
+    "DEMO001": {
+        "student_id": "DEMO001",
+        "name": "Somanath",
+        "skills": ["Python", "Machine Learning", "Statistics", "Data Analysis"],
+        "interests": ["Technology", "Data", "Artificial Intelligence"],
+        "academic_score": 90,
+    },
 }
 
 

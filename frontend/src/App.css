@@ -453,6 +453,246 @@
   border-top-color: var(--success);
 }
 
+.algorithm-complexity-list {
+  margin: 12px 0 0;
+  font-size: 13px;
+}
+
+.algorithm-complexity-list dt {
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.algorithm-complexity-list dt:first-child {
+  margin-top: 0;
+}
+
+.algorithm-complexity-list dd {
+  margin: 2px 0 0;
+}
+
+.algorithm-complexity-note {
+  margin-top: 10px;
+}
+
+/* ---------- BFS vs DFS comparison ---------- */
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.comparison-column {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.comparison-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.comparison-intro {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.comparison-intro strong {
+  color: var(--text);
+}
+
+.comparison-column-label {
+  display: inline-block;
+  font-family: var(--font-heading);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 12px;
+}
+
+.comparison-column-label-bfs {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.comparison-column-label-dfs {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.comparison-column-bfs {
+  border-top: 3px solid var(--primary);
+}
+
+.comparison-column-dfs {
+  border-top: 3px solid var(--success);
+}
+
+/* ---------- Hash lookup performance benchmark ---------- */
+
+.benchmark-panel {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.benchmark-heading {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.benchmark-intro {
+  font-size: 13px;
+  margin: 0 0 8px;
+}
+
+.benchmark-disclaimer {
+  margin: 0 0 12px;
+}
+
+.benchmark-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.benchmark-chain {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.benchmark-chain-label {
+  flex-shrink: 0;
+  min-width: 90px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.benchmark-chain-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.benchmark-chain-step {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.benchmark-chain-target {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.benchmark-chain-arrow {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.benchmark-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.benchmark-size-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.benchmark-size-label select {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.benchmark-results {
+  margin-top: 6px;
+}
+
+.benchmark-method-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.benchmark-method-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+
+.benchmark-method-linear {
+  border-left: 3px solid var(--warning);
+}
+
+.benchmark-method-hash {
+  border-left: 3px solid var(--success);
+}
+
+.benchmark-method-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.benchmark-method-complexity {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.benchmark-method-detail {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+}
+
+.benchmark-conclusion {
+  font-size: 13.5px;
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
 /* ---------- Graph node-type legend ---------- */
 
 .graph-meta-row {
@@ -711,6 +951,10 @@
   background: var(--success);
 }
 
+.progress-fill.progress-warning {
+  background: var(--warning);
+}
+
 /* ---------- Matched / missing skill tags ---------- */
 
 .skill-tag-group {
@@ -774,6 +1018,47 @@
 .recommendation-explanation {
   margin: 0;
   font-size: 14px;
+}
+
+/* ---------- Score explanation (details/summary) ---------- */
+
+.score-details {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+
+.score-details summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.score-details[open] summary {
+  margin-bottom: 12px;
+}
+
+.score-details-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.score-details-fallback {
+  margin: 0;
+}
+
+.score-formula {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.academic-note {
+  margin: 0;
 }
 
 /* ---------- Student details ---------- */
@@ -848,14 +1133,6 @@
   text-align: left;
 }
 
-.traversal-order {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
 .traversal-step {
   display: inline-block;
   border-radius: var(--radius-sm);
@@ -887,13 +1164,126 @@
   color: var(--text);
 }
 
-.traversal-arrow {
-  color: var(--text-muted);
-  margin: 0 2px;
-}
-
 .traversal-result .stat-row {
   margin-bottom: 20px;
+}
+
+/* ---------- Graph relationship diagram ---------- */
+
+.graph-diagram-hint {
+  margin-bottom: 12px;
+}
+
+.graph-diagram {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.bfs-level-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.bfs-level-label {
+  flex-shrink: 0;
+  min-width: 68px;
+  padding-top: 4px;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.bfs-level-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.bfs-level-arrow {
+  margin: 4px 0 4px 84px;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.dfs-path-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-left: 2px;
+}
+
+.dfs-path-list::before {
+  content: '';
+  position: absolute;
+  top: 11px;
+  bottom: 11px;
+  left: 13px;
+  width: 1.5px;
+  background: var(--border);
+  z-index: 0;
+}
+
+.graph-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+}
+
+.graph-node-start {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.graph-node-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.graph-node-label {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 640px) {
+  .bfs-level-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .bfs-level-arrow {
+    margin-left: 0;
+  }
+
+  .comparison-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
 
 /* ---------- Career Explorer ---------- */

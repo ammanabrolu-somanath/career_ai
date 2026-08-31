@@ -31,8 +31,21 @@ function buildProfile(formData) {
   return profile
 }
 
+function toPercent(fraction) {
+  if (fraction === null || fraction === undefined) return null
+  return Math.round(fraction * 1000) / 10
+}
+
 function RecommendationCard({ career }) {
   const isTop = career.rank === 1
+  const weights = career.weights_used || null
+  const academicProvided = weights ? weights.academic_score_provided === true : false
+  const academicPercent = toPercent(career.academic_component)
+  const skillWeightPercent = weights ? toPercent(weights.skill_weight) : null
+  const interestWeightPercent = weights ? toPercent(weights.interest_weight) : null
+  const academicWeightPercent = weights ? toPercent(weights.academic_weight) : null
+  const matchedInterests = career.matched_interests || []
+  const missingInterests = career.missing_interests || []
 
   return (
     <div className={`recommendation-card${isTop ? ' top-recommendation' : ''}`}>
@@ -103,12 +116,85 @@ function RecommendationCard({ career }) {
         </div>
       )}
 
+      {matchedInterests.length > 0 && (
+        <div className="skill-tag-group">
+          <span className="skill-tag-group-label">Matched Interests</span>
+          <div className="skill-tag-list">
+            {matchedInterests.map((interest) => (
+              <span key={interest} className="skill-tag skill-tag-interest">
+                {interest}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {missingInterests.length > 0 && (
+        <div className="skill-tag-group">
+          <span className="skill-tag-group-label">Missing Interests</span>
+          <div className="skill-tag-list">
+            {missingInterests.map((interest) => (
+              <span key={interest} className="skill-tag skill-tag-missing">
+                {interest}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {career.explanation && (
         <div className="explanation-box">
           <span className="explanation-label">Why this career?</span>
           <p className="recommendation-explanation">{career.explanation}</p>
         </div>
       )}
+
+      <details className="score-details">
+        <summary>How this score was calculated</summary>
+
+        {!weights ? (
+          <p className="field-hint score-details-fallback">
+            Detailed scoring breakdown is unavailable for this recommendation.
+          </p>
+        ) : (
+          <div className="score-details-body">
+            {academicProvided ? (
+              <div className="recommendation-metric">
+                <div className="recommendation-metric-label">
+                  <span>Academic Contribution</span>
+                  <span className="stat-pill stat-warning">
+                    {academicPercent === null ? '—' : `${academicPercent}%`}
+                  </span>
+                </div>
+                <div className="progress-track">
+                  <div
+                    className="progress-fill progress-warning"
+                    style={{ width: `${academicPercent === null ? 0 : academicPercent}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="field-hint academic-note">
+                Academic score not provided — weight redistributed to Skills and Interests.
+              </p>
+            )}
+
+            <p className="score-formula">
+              Skills ({skillWeightPercent === null ? '—' : `${skillWeightPercent}%`}) + Interests (
+              {interestWeightPercent === null ? '—' : `${interestWeightPercent}%`})
+              {academicProvided &&
+                ` + Academic (${academicWeightPercent === null ? '—' : `${academicWeightPercent}%`})`}
+            </p>
+
+            {!academicProvided && (
+              <p className="field-hint">
+                Academic score was not provided, so its weight was redistributed proportionally
+                between Skills and Interests.
+              </p>
+            )}
+          </div>
+        )}
+      </details>
     </div>
   )
 }
