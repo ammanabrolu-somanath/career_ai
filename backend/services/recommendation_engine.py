@@ -24,6 +24,7 @@ place and is easy to explain individually during a viva.
 
 from data.careers import get_career
 from data.graph import get_candidate_careers
+from data.student_profiles import add_student_profile, RESERVED_STUDENT_IDS
 from services.scoring import score_career
 from services.validation import validate_profile
 
@@ -103,6 +104,26 @@ def recommend_careers(profile):
         }
 
     normalized_profile = validation_result["normalized_profile"]
+
+    # Dynamic Student Profiles: a valid, submitted profile is saved into the
+    # same in-memory STUDENTS dictionary that STU001-STU005/DEMO001 live in,
+    # using the existing add_student_profile() helper - so it can later be
+    # found via Student Lookup. Reserved (predefined demonstration) IDs are
+    # never overwritten this way; submitting one still produces
+    # recommendations normally, just without saving over the demo profile.
+    #
+    # Note: this is still the same plain in-memory dict as before - a
+    # dynamically-saved profile only survives for as long as this Flask
+    # process keeps running, and is lost on a backend restart. No new
+    # persistence mechanism has been introduced.
+    if normalized_profile["student_id"] in RESERVED_STUDENT_IDS:
+        validation_result["warnings"].append(
+            f"Student ID \"{normalized_profile['student_id']}\" is reserved for a predefined "
+            "demonstration profile and was not saved. Use a different Student ID to save your "
+            "own profile for later lookup."
+        )
+    else:
+        add_student_profile(normalized_profile)
 
     candidate_names = get_candidate_careers(normalized_profile["skills"], normalized_profile["interests"])
     if not candidate_names:

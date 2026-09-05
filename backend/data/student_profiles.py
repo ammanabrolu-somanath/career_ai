@@ -55,6 +55,12 @@ STUDENTS = {
     },
 }
 
+# Captured once, at import time, before any dynamically-submitted profile
+# is ever added via add_student_profile() below - this is exactly the
+# fixed set of predefined demonstration profiles, and must never be
+# silently overwritten by a student-submitted profile using the same ID.
+RESERVED_STUDENT_IDS = frozenset(STUDENTS.keys())
+
 
 def get_student_profile(student_id):
     """Average O(1) hash-table lookup by student_id."""

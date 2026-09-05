@@ -27,6 +27,7 @@ from data.careers import ALL_SKILLS, ALL_INTERESTS
 MAX_REASONABLE_SKILLS = 20
 MIN_ACADEMIC_SCORE = 0
 MAX_ACADEMIC_SCORE = 100
+ACADEMIC_FOUNDATION_THRESHOLD = 40
 CLOSE_MATCH_CUTOFF = 0.6
 
 # Implementation Decision (reviewed and corrected):
@@ -217,6 +218,11 @@ def validate_profile(profile):
         errors.append(f"academic_score must be between {MIN_ACADEMIC_SCORE} and {MAX_ACADEMIC_SCORE}.")
     else:
         normalized_score = academic_score_raw
+        if normalized_score < ACADEMIC_FOUNDATION_THRESHOLD:
+            warnings.append(
+                "Academic score is below 40%. Your academic foundation may need improvement, "
+                "but career recommendations are still based on your skills and interests."
+            )
 
     valid = len(errors) == 0
 
