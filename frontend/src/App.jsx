@@ -7,6 +7,7 @@ import GraphAlgorithms from './pages/GraphAlgorithms'
 import CareerExplorer from './pages/CareerExplorer'
 import CareerComparison from './pages/CareerComparison'
 import SystemTesting from './pages/SystemTesting'
+import GapAnalysis from './pages/GapAnalysis'
 import './App.css'
 
 const PAGES = {
@@ -17,6 +18,7 @@ const PAGES = {
   careers: CareerExplorer,
   compare: CareerComparison,
   testing: SystemTesting,
+  gapanalysis: GapAnalysis,
 }
 
 function App() {

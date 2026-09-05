@@ -63,6 +63,7 @@ const CORE_LINKS = [
 const DEMO_LINKS = [
   { id: 'graph', label: 'Graph Algorithms' },
   { id: 'testing', label: 'System Testing' },
+  { id: 'gapanalysis', label: 'Gap Analysis' },
 ]
 
 function NavLink({ link, currentPage, onNavigate }) {
