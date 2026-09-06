@@ -77,9 +77,182 @@ const FEATURES = [
   },
 ]
 
+// Purely decorative cinematic backdrop for the entire Home page (hero +
+// feature cards). Stage 5A: reworked into a layered wave structure per
+// side - a broad, very soft dark-violet BASE mass, a more elongated,
+// multi-undulation "wave ribbon" on top of it (this is the piece that
+// carries Stage 4E's existing drift animation, unchanged), and a thin
+// soft luminous edge accent tracing part of the ribbon's contour - plus
+// the existing, still-static, atmospheric highlight glows repositioned
+// to sit near those edges instead of floating independently. The lower
+// band (.home-liquid-mass-lower) is intentionally left geometrically
+// unchanged from Stage 4C/4E, since it sits closest to the feature cards
+// and this stage is scoped to the left/right wave structure only.
+// Hex values match index.css's --primary/--primary-dark/--secondary/
+// --secondary-dark/--accent tokens exactly (SVG <stop> can't reliably
+// consume CSS custom properties). Still static except for the existing
+// Stage 4E transform animation on .home-liquid-mass-left/-right.
+function HomeLiquidBackground() {
+  return (
+    <div className="home-liquid-bg" aria-hidden="true">
+      <svg
+        className="home-liquid-svg"
+        viewBox="0 0 1440 1000"
+        preserveAspectRatio="xMidYMid slice"
+        focusable="false"
+      >
+        <defs>
+          <linearGradient id="liquidBaseLeftGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.11" />
+            <stop offset="100%" stopColor="#c026d3" stopOpacity="0.04" />
+          </linearGradient>
+          <linearGradient id="liquidBaseRightGradient" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.10" />
+            <stop offset="100%" stopColor="#c4b5fd" stopOpacity="0.035" />
+          </linearGradient>
+          <linearGradient id="liquidLeftGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.17" />
+            <stop offset="100%" stopColor="#c026d3" stopOpacity="0.07" />
+          </linearGradient>
+          <linearGradient id="liquidRightGradient" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="#c4b5fd" stopOpacity="0.055" />
+          </linearGradient>
+          <filter id="liquidBlurSoft" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="16" />
+          </filter>
+          <filter id="liquidBlurHeavy" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="40" />
+          </filter>
+          <filter id="liquidBlurThin" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="5" />
+          </filter>
+        </defs>
+
+        {/* 1a. Left base mass - broad, very soft, low-opacity dark-violet
+            ambient field behind the left wave ribbon. */}
+        <path
+          className="home-liquid-base-left"
+          d="M-60,-60 C260,60 120,320 300,520 C450,680 200,820 280,1060 L-60,1060 Z"
+          fill="url(#liquidBaseLeftGradient)"
+          filter="url(#liquidBlurHeavy)"
+        />
+
+        {/* 1b. Left wave ribbon - a longer, multi-undulation band (two
+            wavy boundaries, not one blob edge) so it reads as a flowing
+            wave rather than a pool. Keeps the .home-liquid-mass-left
+            class so Stage 4E's existing drift animation still applies,
+            unchanged. */}
+        <path
+          className="home-liquid-mass-left"
+          d="M-20,-20 C220,10 60,160 240,240 C400,310 120,420 280,500 C420,570 140,660 300,740 C420,800 160,880 240,1020 L100,1020 C40,900 220,820 60,740 C-60,660 180,560 40,480 C-80,400 160,320 20,240 C-80,160 140,80 -20,-20 Z"
+          fill="url(#liquidLeftGradient)"
+          filter="url(#liquidBlurSoft)"
+        />
+
+        {/* 1c. Left luminous edge - a thin, brighter stroke tracing part
+            of the wave ribbon's outer contour. Minimal blur so it stays
+            crisp enough to read as an edge, not just more fog. */}
+        <path
+          className="home-liquid-edge-left"
+          d="M40,80 C220,140 100,260 260,340 C400,410 160,500 280,580"
+          fill="none"
+          stroke="#c4b5fd"
+          strokeWidth="4"
+          strokeLinecap="round"
+          opacity="0.16"
+          filter="url(#liquidBlurThin)"
+        />
+
+        {/* 2a. Right base mass - broad, very soft, low-opacity field
+            behind the right wave ribbon. */}
+        <path
+          className="home-liquid-base-right"
+          d="M1500,-60 C1180,60 1320,320 1140,520 C990,680 1240,820 1160,1060 L1500,1060 Z"
+          fill="url(#liquidBaseRightGradient)"
+          filter="url(#liquidBlurHeavy)"
+        />
+
+        {/* 2b. Right wave ribbon - a different rhythm from the left one
+            (not mirrored). Keeps .home-liquid-mass-right so Stage 4E's
+            drift animation still applies, unchanged. */}
+        <path
+          className="home-liquid-mass-right"
+          d="M1460,-30 C1220,20 1340,150 1180,230 C1040,300 1300,400 1160,480 C1030,550 1290,650 1150,730 C1030,800 1280,870 1200,1010 L1340,1010 C1400,900 1240,820 1380,740 C1480,660 1300,560 1420,480 C1500,400 1320,320 1440,240 C1500,160 1340,80 1460,-30 Z"
+          fill="url(#liquidRightGradient)"
+          filter="url(#liquidBlurSoft)"
+        />
+
+        {/* 2c. Right luminous edge - thin, brighter stroke, different
+            contour from the left edge. */}
+        <path
+          className="home-liquid-edge-right"
+          d="M1400,100 C1220,155 1340,270 1190,350 C1060,420 1290,505 1170,585"
+          fill="none"
+          stroke="#d946ef"
+          strokeWidth="4"
+          strokeLinecap="round"
+          opacity="0.14"
+          filter="url(#liquidBlurThin)"
+        />
+
+        {/* 3. Lower-page form - unchanged from Stage 4C/4E: a wide, low,
+            subtle pool behind where the feature cards sit, entering from
+            both edges. Left geometrically untouched this stage since it
+            sits closest to the card content. */}
+        <path
+          className="home-liquid-mass-lower"
+          d="M-10,720 C220,660 420,770 700,715 C960,665 1160,765 1450,690 L1450,1010 L-10,1010 Z"
+          fill="#7c3aed"
+          opacity="0.07"
+          filter="url(#liquidBlurSoft)"
+        />
+
+        {/* 4. Soft atmospheric highlights - still static, very low
+            opacity, heavily blurred. Repositioned to sit near the new
+            luminous edges rather than floating independently, so they
+            read as glow hugging the wave rather than separate blobs. */}
+        <ellipse
+          className="home-liquid-highlight"
+          cx="250"
+          cy="330"
+          rx="170"
+          ry="200"
+          fill="#c4b5fd"
+          opacity="0.07"
+          filter="url(#liquidBlurHeavy)"
+        />
+        <ellipse
+          className="home-liquid-highlight"
+          cx="1200"
+          cy="380"
+          rx="160"
+          ry="190"
+          fill="#d946ef"
+          opacity="0.06"
+          filter="url(#liquidBlurHeavy)"
+        />
+        <ellipse
+          className="home-liquid-highlight"
+          cx="720"
+          cy="900"
+          rx="280"
+          ry="100"
+          fill="#c4b5fd"
+          opacity="0.05"
+          filter="url(#liquidBlurHeavy)"
+        />
+      </svg>
+      <div className="home-liquid-scrim" />
+    </div>
+  )
+}
+
 function Home({ onNavigate }) {
   return (
     <section className="home">
+      <HomeLiquidBackground />
+
       <div className="home-hero">
         <span className="stat-pill stat-primary">AI-Based Smart Career Guidance System</span>
         <h1>Find the career path that fits your skills and interests</h1>

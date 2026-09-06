@@ -2,6 +2,13 @@
   display: flex;
   flex-direction: column;
   min-height: 100svh;
+  /* Subtle atmospheric violet/pink lighting - large, soft, low-opacity,
+     not an animated or attention-grabbing effect. Now lives on the outer
+     app wrapper instead of a dashboard-specific content pane, so it
+     spans the full page (header included). */
+  background-image: var(--gradient-atmosphere);
+  background-color: var(--bg);
+  background-attachment: fixed;
 }
 
 /* Visually hides content while keeping it available to screen readers -
@@ -20,101 +27,110 @@
   border: 0;
 }
 
-/* ---------- Navbar ---------- */
+/* ---------- Site header (minimal top navigation) ---------- */
 
-.navbar {
+.site-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 16px 32px;
-  background: var(--surface);
+  gap: 20px;
+  padding: 22px 48px;
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
+  background: rgba(5, 5, 7, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.navbar-title {
+.site-brand {
   font-family: var(--font-heading);
-  font-size: 19px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--primary);
-}
-
-.navbar-links {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-}
-
-.navbar-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.navbar-divider {
-  width: 1px;
-  height: 22px;
-  background: var(--border);
-  flex-shrink: 0;
-}
-
-.navbar-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: 1px solid transparent;
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 14.5px;
-  font-weight: 500;
-  color: var(--text-muted);
-  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
-}
-
-.navbar-icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  display: inline-flex;
-  transition: transform 0.15s ease;
-}
-
-.navbar-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.navbar-link:hover {
-  background: var(--bg);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--text);
 }
 
-.navbar-link:hover .navbar-icon {
-  transform: translateY(-1px);
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 26px;
 }
 
-.navbar-link.active {
-  background: var(--primary);
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow: var(--shadow-sm);
+.site-nav-link {
+  position: relative;
+  display: inline-block;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: color var(--transition-base);
 }
 
-.navbar-link:focus-visible,
+.site-nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 1.5px;
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-base);
+}
+
+.site-nav-link:hover {
+  color: var(--text);
+}
+
+.site-nav-link:hover::after,
+.site-nav-link.active::after {
+  transform: scaleX(1);
+}
+
+.site-nav-link.active {
+  color: var(--text);
+}
+
+.site-nav-link:focus-visible,
 .primary-button:focus-visible,
-.secondary-button:focus-visible {
+.secondary-button:focus-visible,
+.home-feature-card:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-/* ---------- Page container ---------- */
+/* Hidden on desktop; becomes visible at the mobile breakpoint below. */
+.site-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+
+.site-menu-toggle svg {
+  width: 19px;
+  height: 19px;
+}
+
+.site-menu-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.site-nav-mobile {
+  display: none;
+}
 
 .page-container {
   flex: 1;
@@ -131,7 +147,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: var(--primary);
+  background: var(--gradient-primary);
   color: #ffffff;
   border: none;
   padding: 12px 24px;
@@ -139,7 +155,7 @@
   font-size: 16px;
   font-weight: 600;
   box-shadow: var(--shadow-sm);
-  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  transition: box-shadow var(--transition-base), transform var(--transition-base), filter var(--transition-base);
 }
 
 .button-spinner {
@@ -164,13 +180,14 @@
 }
 
 .primary-button:hover:not(:disabled) {
-  background: var(--primary-dark);
-  box-shadow: var(--shadow-md);
+  filter: brightness(1.08);
+  box-shadow: var(--shadow-md), var(--glow-primary);
   transform: translateY(-1px);
 }
 
 .primary-button:active:not(:disabled) {
-  transform: translateY(0);
+  filter: brightness(0.96);
+  transform: translateY(1px);
   box-shadow: var(--shadow-sm);
 }
 
@@ -180,26 +197,28 @@
 }
 
 .secondary-button {
-  background: var(--secondary);
-  color: #ffffff;
-  border: none;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-hover);
   padding: 10px 20px;
   border-radius: var(--radius-sm);
   font-size: 15px;
   font-weight: 600;
-  box-shadow: var(--shadow-sm);
-  transition: opacity 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  box-shadow: none;
+  transition: background var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
 }
 
 .secondary-button:hover:not(:disabled) {
-  opacity: 0.92;
-  box-shadow: var(--shadow-md);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
   transform: translateY(-1px);
 }
 
 .secondary-button:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: var(--shadow-sm);
+  background: var(--secondary-soft);
+  transform: translateY(1px);
+  box-shadow: none;
 }
 
 .secondary-button:disabled {
@@ -210,12 +229,98 @@
 /* ---------- Home page ---------- */
 
 .home {
+  position: relative;
   padding: 8px 0 16px;
 }
 
 .home-hero {
   text-align: center;
   padding: 40px 0 8px;
+}
+
+/* Decorative liquid backdrop - now a Home-page-wide layer (sibling of
+   .home-hero and .home-features, not nested inside the hero), so the
+   atmosphere continues behind the feature cards too. left:50% +
+   translateX(-50%) + width:100vw breaks it out of .page-container's
+   max-width to reach the true viewport edges, not just the content
+   column. .home deliberately has no overflow:hidden of its own - the
+   project's existing global `body { overflow-x: hidden }` (index.css)
+   is the safety net that keeps this from ever causing horizontal
+   scroll, the same pattern any full-bleed section needs. */
+.home-liquid-bg {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.home-liquid-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Stage 4E: first subtle motion pass. transform-only, CSS @keyframes only
+   (no JS, no SVG SMIL) so the existing global
+   @media (prefers-reduced-motion: reduce) rule in index.css automatically
+   disables this without any extra code. Amplitude is deliberately tiny
+   relative to the 1440x1000 viewBox (roughly 1% of composition width) and
+   durations differ between the two shapes so they drift out of phase
+   rather than moving in visible unison. .home-liquid-mass-lower and the
+   highlight ellipses are left fully static in this first pass, per the
+   stage's explicit "prefer the safer option" guidance for the layer
+   nearest the feature cards. */
+@keyframes home-liquid-drift-left {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(14px, -10px);
+  }
+}
+
+@keyframes home-liquid-drift-right {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-12px, 11px);
+  }
+}
+
+.home-liquid-mass-left {
+  animation: home-liquid-drift-left 32s ease-in-out infinite alternate;
+}
+
+.home-liquid-mass-right {
+  animation: home-liquid-drift-right 41s ease-in-out infinite alternate;
+}
+
+/* Safety net independent of the exact SVG path coordinates: a centered
+   vignette that keeps the column behind the heading/description/cards
+   predominantly dark, while letting the left/right/lower forms stay
+   visible nearer the edges where the vignette has already faded out. */
+.home-liquid-scrim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 60% 55% at 50% 32%,
+    var(--bg) 0%,
+    rgba(5, 5, 7, 0.7) 45%,
+    transparent 80%
+  );
+}
+
+/* Hero and feature-card content sit above the decorative layer. */
+.home-hero,
+.home-features {
+  position: relative;
+  z-index: 1;
 }
 
 .home-hero h1 {
@@ -244,7 +349,11 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  background: var(--surface);
+  /* Slightly translucent (was fully opaque var(--surface)) so the
+     Home-page liquid atmosphere can faintly show through/around the
+     cards, per Stage 4C - not glassmorphism (no blur), just a small
+     alpha reduction. Same RGB as --surface (#0f0c16). */
+  background: rgba(15, 12, 22, 0.92);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
@@ -350,6 +459,13 @@
 .lookup-field input,
 .search-field input {
   width: 100%;
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .profile-form label {
@@ -381,15 +497,51 @@
   color: var(--text-muted);
 }
 
+/* Consolidated hover feedback for every text input/select in the app -
+   one rule instead of repeating it inside each page-specific input block.
+   A subtle mid-tone border on hover, distinct from both the resting
+   border and the primary focus ring, previews that the field is
+   interactive before it's actually focused. */
+.profile-form input:hover:not(:focus):not(:disabled),
+.lookup-field input:hover:not(:focus):not(:disabled),
+.search-field input:hover:not(:focus):not(:disabled),
+.graph-controls input:hover:not(:focus):not(:disabled),
+.career-search-controls input:hover:not(:focus):not(:disabled),
+.comparison-selectors select:hover:not(:focus):not(:disabled),
+.benchmark-size-label select:hover:not(:focus):not(:disabled) {
+  border-color: var(--text-muted);
+}
+
 /* ---------- Results / placeholder sections ---------- */
 
 .results-section {
-  margin-top: 24px;
+  margin-top: 28px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 20px 24px;
+  padding: 28px 32px;
+  animation: results-fade-in 0.2s ease;
+}
+
+@keyframes results-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Page entrance: every page's root <section> lives directly inside
+   .page-container (see App.jsx), so this one rule gives every page a
+   consistent, subtle entrance on navigation without touching any page's
+   JSX or adding a per-page class. Reuses the same keyframe as
+   .results-section above rather than defining a second, near-identical
+   animation. */
+.page-container > section {
+  animation: results-fade-in 0.2s ease;
 }
 
 .placeholder-text {
@@ -441,8 +593,16 @@
   border: 1px solid var(--border);
   border-top: 3px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 16px 20px;
+  padding: 20px 22px;
+  transition: background var(--transition-base), transform var(--transition-base);
+}
+
+/* Background shift + lift only on hover, no border-color change - these
+   cards use border-top-color for a permanent accent (first/last child
+   below), so a hover border change would clash with that meaning. */
+.algorithm-explanation > div:hover {
+  background: var(--surface-elevated);
+  transform: translateY(-2px);
 }
 
 .algorithm-explanation > div:first-child {
@@ -637,6 +797,18 @@
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.benchmark-size-label select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.benchmark-size-label select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .benchmark-results {
@@ -784,6 +956,8 @@
   padding: 14px 18px;
   margin-bottom: 16px;
   border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  background: var(--surface);
 }
 
 .message-box h3 {
@@ -797,19 +971,22 @@
   padding-left: 20px;
 }
 
+/* Semantic accent carried by the left border + a faint background tint,
+   not a full-color box - success/warning/error stay clearly
+   distinguishable without dominating the layout. */
 .error-box {
   background: var(--danger-soft);
-  border-color: var(--danger);
+  border-left-color: var(--danger);
 }
 
 .warning-box {
   background: var(--warning-soft);
-  border-color: var(--warning);
+  border-left-color: var(--warning);
 }
 
 .suggestion-box {
   background: var(--primary-soft);
-  border-color: var(--primary);
+  border-left-color: var(--primary);
 }
 
 /* ---------- Recommendation cards ---------- */
@@ -824,29 +1001,29 @@
   position: relative;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 20px 22px;
+  padding: 24px 26px;
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
   text-align: left;
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  transition: background var(--transition-base), transform var(--transition-base), border-color var(--transition-base);
 }
 
 .recommendation-card:hover {
-  box-shadow: var(--shadow-md);
+  background: var(--surface-elevated);
   transform: translateY(-1px);
+  border-color: var(--border-hover);
 }
 
 .recommendation-card.top-recommendation {
   border-color: var(--primary);
   border-width: 2px;
-  background: var(--primary-soft);
+  background: var(--surface);
 }
 
 .best-match-badge {
   position: absolute;
   top: -11px;
   right: 18px;
-  background: var(--primary);
+  background: var(--gradient-primary);
   color: #ffffff;
   font-family: var(--font-heading);
   font-size: 11px;
@@ -974,24 +1151,26 @@
 .skill-tag-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .skill-tag {
   font-size: 12.5px;
-  font-weight: 600;
-  padding: 3px 10px;
+  font-weight: 500;
+  padding: 4px 11px;
   border-radius: var(--radius-pill);
 }
 
 .skill-tag-matched {
   background: var(--success-soft);
   color: var(--success);
+  border: 1px solid var(--success);
 }
 
 .skill-tag-missing {
   background: var(--warning-soft);
   color: var(--warning);
+  border: 1px solid var(--warning);
 }
 
 /* ---------- Explanation ---------- */
@@ -1024,9 +1203,23 @@
 
 .score-details {
   margin-top: 16px;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 10px 14px;
+  padding: 12px 16px;
+  transition: border-color var(--transition-base);
+}
+
+.score-details:hover,
+.score-details[open] {
+  border-color: var(--border-hover);
+}
+
+.comparison-flow-arrow {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 4px 0;
 }
 
 .score-details summary {
@@ -1034,6 +1227,34 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--primary);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.score-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.score-details summary::after {
+  content: '›';
+  display: inline-block;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+
+.score-details[open] summary::after {
+  transform: rotate(90deg);
+}
+
+.score-details summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
 .score-details[open] summary {
@@ -1044,6 +1265,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  animation: results-fade-in 0.18s ease;
 }
 
 .score-details-fallback {
@@ -1105,6 +1327,45 @@
   color: var(--success);
 }
 
+/* ---------- Hash lookup timing comparison (real backend measurement) ---------- */
+
+.hashing-benchmark-table-wrap {
+  overflow-x: auto;
+}
+
+.hashing-benchmark-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+  font-size: 13.5px;
+}
+
+.hashing-benchmark-note {
+  margin-top: 12px;
+}
+
+.hashing-benchmark-table th,
+.hashing-benchmark-table td {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.hashing-benchmark-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.hashing-benchmark-table th {
+  border-bottom: 1px solid var(--border-hover);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
 .skill-tag-shared {
   box-shadow: inset 0 0 0 1.5px var(--primary);
 }
@@ -1145,11 +1406,13 @@
 .traversal-step-skill {
   background: var(--primary-soft);
   color: var(--primary);
+  border: 1px solid var(--primary);
 }
 
 .traversal-step-interest {
   background: var(--success-soft);
   color: var(--success);
+  border: 1px solid var(--success);
 }
 
 .traversal-step-career {
@@ -1334,15 +1597,15 @@
 .career-card {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 18px 20px;
+  padding: 22px 24px;
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  transition: background var(--transition-base), transform var(--transition-base), border-color var(--transition-base);
 }
 
 .career-card:hover {
-  box-shadow: var(--shadow-md);
+  background: var(--surface-elevated);
   transform: translateY(-1px);
+  border-color: var(--border-hover);
 }
 
 .career-card-header {
@@ -1489,17 +1752,19 @@
 .test-card {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 16px 20px;
+  padding: 18px 22px;
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
   text-align: left;
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  transition: background var(--transition-base), transform var(--transition-base);
 }
 
 .test-card:hover {
-  box-shadow: var(--shadow-md);
+  background: var(--surface-elevated);
   transform: translateY(-1px);
 }
+
+/* test-card-pass/-fail already set border-color; hover only lifts elevation
+   so the pass/fail border color remains the primary visual signal. */
 
 .test-card-pass {
   border-color: var(--success);
@@ -1534,11 +1799,13 @@
 .test-badge-pass {
   background: var(--success-soft);
   color: var(--success);
+  border: 1px solid var(--success);
 }
 
 .test-badge-fail {
   background: var(--danger-soft);
   color: var(--danger);
+  border: 1px solid var(--danger);
 }
 
 .test-card-explanation {
@@ -1559,6 +1826,15 @@
 }
 
 .system-algorithms-heading {
+  margin-top: 32px;
+}
+
+/* .algorithm-explanation has no bottom margin and headings have no top
+   margin (index.css), so a heading immediately following one of these
+   grids (System Insights has three such transitions) would otherwise
+   sit flush against it with no gap. Matches the spacing already used by
+   .system-algorithms-heading above for the same situation. */
+.algorithm-explanation + h2 {
   margin-top: 32px;
 }
 
@@ -1585,8 +1861,14 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-base), transform var(--transition-base), border-color var(--transition-base);
   padding: 12px 24px;
+}
+
+.stat-block:hover {
+  background: var(--surface-elevated);
+  transform: translateY(-1px);
+  border-color: var(--border-hover);
 }
 
 .stat-value {
@@ -1633,15 +1915,60 @@
 
 /* ---------- Responsive ---------- */
 
-/* Tablet (~768px and below): tighten spacing, keep row layouts that already
-   wrap safely via flex-wrap, narrow the comparison table's label column. */
-@media (max-width: 768px) {
-  .navbar {
-    padding: 12px 20px;
+/* Laptop/tablet (~1024px and below): compact the horizontal nav slightly
+   before it needs to become a menu. */
+@media (max-width: 1024px) {
+  .site-header {
+    padding: 20px 32px;
   }
 
-  .navbar-title {
-    font-size: 18px;
+  .site-nav {
+    gap: 18px;
+  }
+
+  .site-nav-link {
+    font-size: 13.5px;
+  }
+}
+
+/* Tablet/mobile (~768px and below): the horizontal nav is replaced by a
+   menu button that reveals a simple stacked list below the header - not
+   an off-canvas sidebar. */
+@media (max-width: 768px) {
+  .site-header {
+    padding: 16px 20px;
+  }
+
+  .site-nav {
+    display: none;
+  }
+
+  .site-menu-toggle {
+    display: inline-flex;
+  }
+
+  .site-nav-mobile {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    gap: 2px;
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .site-nav-mobile .site-nav-link {
+    width: 100%;
+    padding: 10px 4px;
+    text-align: left;
+  }
+
+  .site-nav-mobile .site-nav-link::after {
+    display: none;
+  }
+
+  .site-nav-mobile .site-nav-link.active {
+    color: var(--primary);
   }
 
   .page-container {
@@ -1656,39 +1983,10 @@
   }
 }
 
-/* Mobile (~480px and below): stack the navbar into a full-width menu,
-   shrink card grids so they never force a minimum wider than the
-   viewport, and stack any remaining row-based forms. */
+/* Mobile (~480px and below): shrink card grids so they never force a
+   minimum wider than the viewport, and stack any remaining row-based
+   forms. */
 @media (max-width: 640px) {
-  .navbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .navbar-links {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
-  }
-
-  .navbar-group {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .navbar-link {
-    width: 100%;
-    text-align: left;
-    padding: 10px 14px;
-  }
-
-  .navbar-divider {
-    width: 100%;
-    height: 1px;
-    margin: 2px 0;
-  }
-
   .lookup-form {
     flex-direction: column;
     align-items: stretch;
@@ -1698,6 +1996,19 @@
 @media (max-width: 480px) {
   .page-container {
     padding: 20px 12px 40px;
+  }
+
+  /* .graph-controls holds one input plus three buttons (Run BFS / Run
+     DFS / Compare) - too many items to stay usable in a single wrapped
+     row at this width, so it now stacks the same way .lookup-form
+     already does. */
+  .graph-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .graph-controls input {
+    width: 100%;
   }
 
   .results-section,
@@ -1719,11 +2030,6 @@
   .primary-button,
   .secondary-button {
     width: 100%;
-  }
-
-  .graph-controls .secondary-button {
-    width: auto;
-    flex: 1;
   }
 
   .test-card-header {

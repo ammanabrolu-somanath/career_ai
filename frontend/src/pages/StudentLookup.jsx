@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import { getStudent } from '../services/api'
+import { getStudent, getHashingBenchmark } from '../services/api'
+
+function formatMs(seconds) {
+  return `${(seconds * 1000).toFixed(4)} ms`
+}
 
 function StudentLookup() {
   const [studentId, setStudentId] = useState('')
@@ -7,6 +11,29 @@ function StudentLookup() {
   const [networkError, setNetworkError] = useState('')
   const [result, setResult] = useState(null)
   const [lastSearchedId, setLastSearchedId] = useState('')
+
+  const [benchmarkLoading, setBenchmarkLoading] = useState(false)
+  const [benchmarkError, setBenchmarkError] = useState('')
+  const [benchmarkResults, setBenchmarkResults] = useState(null)
+
+  const runBenchmark = async () => {
+    setBenchmarkLoading(true)
+    setBenchmarkError('')
+    setBenchmarkResults(null)
+
+    try {
+      const data = await getHashingBenchmark()
+      if (data.success) {
+        setBenchmarkResults(data.results)
+      } else {
+        setBenchmarkError(data.error || 'Unable to run the hash lookup benchmark.')
+      }
+    } catch (error) {
+      setBenchmarkError(error.message)
+    } finally {
+      setBenchmarkLoading(false)
+    }
+  }
 
   const handleSearch = async (event) => {
     event.preventDefault()
@@ -132,6 +159,83 @@ function StudentLookup() {
               )}
             </div>
           </div>
+        )}
+      </div>
+
+      <h2>Hash Lookup Performance</h2>
+      <p>
+        This experiment compares sequential search through a list with Python
+        dictionary-based hash lookup, using synthetic student records generated only for this
+        benchmark. These records are completely separate from the real STUDENTS profiles — the
+        benchmark does not read, modify, or add anything to the real student data, and every
+        stored profile is unaffected. The benchmark measures only the lookup operation.
+      </p>
+
+      <button type="button" className="secondary-button" onClick={runBenchmark} disabled={benchmarkLoading}>
+        {benchmarkLoading ? (
+          <>
+            <span className="button-spinner" aria-hidden="true" />
+            Running...
+          </>
+        ) : (
+          'Run Hash Lookup Benchmark'
+        )}
+      </button>
+
+      <div className="results-section">
+        {benchmarkLoading && <p className="placeholder-text">Running the benchmark on the backend...</p>}
+
+        {!benchmarkLoading && benchmarkError && (
+          <div className="message-box error-box">
+            <p>{benchmarkError}</p>
+          </div>
+        )}
+
+        {!benchmarkLoading && !benchmarkError && !benchmarkResults && (
+          <p className="placeholder-text">
+            Click "Run Hash Lookup Benchmark" to measure real sequential-search-vs-hash-lookup
+            timings from the backend.
+          </p>
+        )}
+
+        {!benchmarkLoading && !benchmarkError && benchmarkResults && (
+          <>
+            <div className="hashing-benchmark-table-wrap">
+              <table className="hashing-benchmark-table">
+                <thead>
+                  <tr>
+                    <th>Dataset Size</th>
+                    <th>Sequential Search</th>
+                    <th>Hash Lookup</th>
+                    <th>Records Examined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {benchmarkResults.map((row) => (
+                    <tr key={row.dataset_size}>
+                      <td>{row.dataset_size.toLocaleString()}</td>
+                      <td>{formatMs(row.sequential_average_time)}</td>
+                      <td>{formatMs(row.hash_average_time)}</td>
+                      <td>
+                        {row.sequential_records_examined.toLocaleString()} (sequential) vs.{' '}
+                        {row.hash_access_type} (hash)
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="field-hint hashing-benchmark-note">
+              Sequential search may examine many records because it scans the list. "Records
+              Examined" is the number of records sequential search scanned before finding the
+              target. Dictionary lookup uses the student ID as a hash key and accesses the
+              corresponding entry directly. The theoretical average complexity of Python
+              dictionary lookup is O(1), while sequential search is O(n). These timings are
+              experimental measurements from the current machine and should not be presented as
+              universal performance guarantees.
+            </p>
+          </>
         )}
       </div>
     </section>

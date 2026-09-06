@@ -78,3 +78,8 @@ export function runBFS(node) {
 export function runDFS(node) {
   return getJSON(`/graph/dfs/${encodeURIComponent(node)}`)
 }
+
+export function getHashingBenchmark(size) {
+  const query = size ? `?size=${encodeURIComponent(size)}` : ''
+  return getJSON(`/hashing/benchmark${query}`)
+}

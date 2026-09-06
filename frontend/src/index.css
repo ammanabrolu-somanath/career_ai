@@ -1,74 +1,107 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* ---------- Brand ---------- */
-  --primary: #2f5fdb;
-  --primary-dark: #1e3fa3;
-  --primary-soft: rgba(47, 95, 219, 0.08);
-  --secondary: #16a394;
-  --secondary-soft: rgba(22, 163, 148, 0.12);
+  /* ---------- Backgrounds ---------- */
+  /* Near-black foundation with a faint violet undertone rather than flat
+     pure black - .app-content layers a subtle atmospheric gradient on
+     top of this (see App.css). */
+  --bg: #050507;
+  --bg-secondary: #0a0812;
+
+  /* ---------- Surfaces ---------- */
+  /* Deliberately solid, not translucent glass - "not every component
+     should look like frosted glass." Reserve any backdrop-filter for the
+     few places that genuinely need it (decided per-component, later). */
+  --surface: #0f0c16;
+  --surface-elevated: #17131f;
+
+  /* ---------- Text ---------- */
+  --text: #f5f3f7;
+  --text-muted: #a79fb0;
+  --text-subtle: #756c82;
+
+  /* ---------- Borders ---------- */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(196, 181, 253, 0.28);
+
+  /* ---------- Brand: deep violet / magenta-pink / lavender ---------- */
+  --primary: #8b5cf6;
+  --primary-dark: #7c3aed;
+  --primary-soft: rgba(139, 92, 246, 0.14);
+  --secondary: #d946ef;
+  --secondary-dark: #c026d3;
+  --secondary-soft: rgba(217, 70, 239, 0.14);
+  /* Supporting lavender tier - used sparingly for tertiary accents
+     (distinct from primary/secondary, not just an opacity variant). */
+  --accent: #c4b5fd;
+  --accent-soft: rgba(196, 181, 253, 0.14);
 
   /* ---------- Semantic ---------- */
-  --success: #16a394;
-  --success-soft: rgba(22, 163, 148, 0.12);
-  --warning: #b8790f;
-  --warning-soft: rgba(184, 121, 15, 0.12);
-  --danger: #c0392b;
-  --danger-soft: rgba(192, 57, 43, 0.08);
+  --success: #22c55e;
+  --success-soft: rgba(34, 197, 94, 0.14);
+  --warning: #f59e0b;
+  --warning-soft: rgba(245, 158, 11, 0.14);
+  --danger: #f43f5e;
+  --danger-soft: rgba(244, 63, 94, 0.12);
 
-  /* ---------- Surfaces & text ---------- */
-  --bg: #f5f7fb;
-  --surface: #ffffff;
-  --text: #1f2333;
-  --text-muted: #5b6072;
-  --border: #e2e5ec;
+  /* ---------- Gradients ---------- */
+  /* Foundation only - applied to a couple of global surfaces this stage
+     (buttons, the main content atmosphere). Not animated. */
+  --gradient-primary: linear-gradient(135deg, #8b5cf6, #d946ef);
+  --gradient-atmosphere:
+    radial-gradient(60% 50% at 18% -8%, rgba(139, 92, 246, 0.10), transparent 70%),
+    radial-gradient(55% 45% at 100% 12%, rgba(217, 70, 239, 0.07), transparent 70%),
+    radial-gradient(50% 40% at 50% 100%, rgba(124, 58, 237, 0.06), transparent 70%);
 
   /* ---------- Depth ---------- */
-  --shadow-sm: 0 1px 2px rgba(23, 27, 36, 0.05), 0 1px 1px rgba(23, 27, 36, 0.04);
-  --shadow-md: 0 8px 20px rgba(23, 27, 36, 0.09), 0 2px 6px rgba(23, 27, 36, 0.05);
+  /* Kept deliberately restrained - dark surfaces should be separated
+     mainly by border/background contrast, not heavy elevation. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  /* Restrained accent glow - reserved for a few deliberate moments
+     (primary button hover, active nav, focus rings), never ambient. */
+  --glow-primary: 0 0 0 1px rgba(139, 92, 246, 0.4), 0 0 18px rgba(139, 92, 246, 0.18);
 
   /* ---------- Radius scale ---------- */
+  /* --radius-lg reduced from a rounder 16px to a more restrained 12px -
+     editorial content panels, not rounded dashboard widgets. */
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-pill: 999px;
 
   /* ---------- Type ---------- */
-  --font-heading: 'Manrope', system-ui, 'Segoe UI', Roboto, sans-serif;
-  --font-body: system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Display/heading: an editorial serif, used for h1-h3 site-wide.
+     UI/body: a clean modern sans-serif. Technical: monospace, reserved
+     for IDs/scores/logs (not yet applied inside individual pages). */
+  --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  /* ---------- Spacing scale ---------- */
+  /* Established as a foundation for later page-level work - existing
+     rules keep their literal px values for now, unchanged. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* ---------- Transitions ---------- */
+  --transition-fast: 150ms ease;
+  --transition-base: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
 
   font: 16px/1.5 var(--font-body);
-  color-scheme: light dark;
+  color-scheme: dark;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --primary: #6d8dee;
-    --primary-dark: #4a68c4;
-    --primary-soft: rgba(109, 141, 238, 0.14);
-    --secondary: #3fd0bd;
-    --secondary-soft: rgba(63, 208, 189, 0.14);
-
-    --success: #3fd0bd;
-    --success-soft: rgba(63, 208, 189, 0.14);
-    --warning: #e0a940;
-    --warning-soft: rgba(224, 169, 64, 0.14);
-    --danger: #e2685a;
-    --danger-soft: rgba(226, 104, 90, 0.12);
-
-    --bg: #14161f;
-    --surface: #1c1f2b;
-    --text: #eef0f6;
-    --text-muted: #a3a8ba;
-    --border: #2c2f3d;
-
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
-    --shadow-md: 0 10px 24px rgba(0, 0, 0, 0.5), 0 3px 8px rgba(0, 0, 0, 0.4);
-  }
 }
 
 * {
@@ -123,4 +156,18 @@ button {
 
 input {
   font-family: inherit;
+}
+
+/* Applied once, globally, so every transition/animation added anywhere in
+   App.css automatically respects a reduced-motion preference without
+   needing a per-rule guard. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
