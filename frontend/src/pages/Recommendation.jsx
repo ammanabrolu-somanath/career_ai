@@ -1,27 +1,37 @@
-import { useState } from 'react'
-import { getRecommendations } from '../services/api'
+import { useEffect, useMemo, useState } from 'react'
+import { getCareers, getRecommendations } from '../services/api'
 
 const INITIAL_FORM = {
   studentId: '',
   name: '',
-  skills: '',
-  interests: '',
+  skills: [],
+  interests: [],
   academicScore: '',
 }
 
-function parseCommaList(value) {
-  return value
+// Splits on commas so pasting "Python, SQL, Statistics" (or hitting Enter
+// after a single word) both work the same way, then de-dupes case-
+// insensitively against whatever the field already holds.
+function addChipValues(existing, rawInput) {
+  const incoming = rawInput
     .split(',')
     .map((item) => item.trim())
     .filter((item) => item.length > 0)
+
+  const next = [...existing]
+  for (const value of incoming) {
+    const alreadyPresent = next.some((item) => item.toLowerCase() === value.toLowerCase())
+    if (!alreadyPresent) next.push(value)
+  }
+  return next
 }
 
 function buildProfile(formData) {
   const profile = {
     student_id: formData.studentId.trim(),
     name: formData.name.trim(),
-    skills: parseCommaList(formData.skills),
-    interests: parseCommaList(formData.interests),
+    skills: formData.skills,
+    interests: formData.interests,
   }
 
   if (formData.academicScore !== '') {
@@ -31,9 +41,118 @@ function buildProfile(formData) {
   return profile
 }
 
+// Client-side checks mirror only the backend's blocking rules (validation.py)
+// so obvious mistakes (empty student ID, no skills at all) are caught
+// before a network round trip - never a stand-in for the backend's own
+// vocabulary/typo checks, which still run server-side and are rendered
+// from the response exactly as before.
+function getClientErrors(formData) {
+  const errors = []
+  if (!formData.studentId.trim()) {
+    errors.push('Student ID is required.')
+  }
+  if (formData.skills.length === 0) {
+    errors.push('Add at least one skill.')
+  }
+  if (formData.interests.length === 0) {
+    errors.push('Add at least one interest.')
+  }
+  if (formData.academicScore !== '') {
+    const score = Number(formData.academicScore)
+    if (Number.isNaN(score) || score < 0 || score > 100) {
+      errors.push('Academic score must be a number between 0 and 100.')
+    }
+  }
+  return errors
+}
+
 function toPercent(fraction) {
   if (fraction === null || fraction === undefined) return null
   return Math.round(fraction * 1000) / 10
+}
+
+// A labeled text field that turns entries into removable chips instead of
+// a raw comma-separated string. Free text is still accepted (not limited
+// to `suggestions`) so the backend's typo-suggestion and contradictory-
+// preference flows stay reachable - `suggestions` is purely a convenience
+// shortlist sourced from the real backend vocabulary (via /api/careers),
+// not a new constraint.
+function ChipInput({ id, values, onChange, suggestions, placeholder, ariaLabel }) {
+  const [inputValue, setInputValue] = useState('')
+
+  const commitInput = () => {
+    if (!inputValue.trim()) return
+    onChange(addChipValues(values, inputValue))
+    setInputValue('')
+  }
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault()
+      commitInput()
+    } else if (event.key === 'Backspace' && inputValue === '' && values.length > 0) {
+      onChange(values.slice(0, -1))
+    }
+  }
+
+  const removeChip = (value) => {
+    onChange(values.filter((item) => item !== value))
+  }
+
+  const addSuggestion = (value) => {
+    if (values.some((item) => item.toLowerCase() === value.toLowerCase())) return
+    onChange([...values, value])
+  }
+
+  const availableSuggestions = suggestions.filter(
+    (item) => !values.some((value) => value.toLowerCase() === item.toLowerCase())
+  )
+
+  return (
+    <div className="chip-input">
+      <div className="chip-input-field">
+        {values.map((value) => (
+          <span key={value} className="chip">
+            {value}
+            <button
+              type="button"
+              className="chip-remove"
+              onClick={() => removeChip(value)}
+              aria-label={`Remove ${value}`}
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        <input
+          id={id}
+          type="text"
+          value={inputValue}
+          onChange={(event) => setInputValue(event.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={commitInput}
+          placeholder={values.length === 0 ? placeholder : 'Add another…'}
+          aria-label={ariaLabel}
+          className="chip-input-text"
+        />
+      </div>
+
+      {availableSuggestions.length > 0 && (
+        <div className="chip-suggestions">
+          {availableSuggestions.slice(0, 12).map((value) => (
+            <button
+              key={value}
+              type="button"
+              className="chip-suggestion"
+              onClick={() => addSuggestion(value)}
+            >
+              + {value}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function RecommendationCard({ career }) {
@@ -204,6 +323,38 @@ function Recommendation() {
   const [loading, setLoading] = useState(false)
   const [networkError, setNetworkError] = useState('')
   const [result, setResult] = useState(null)
+  const [clientErrors, setClientErrors] = useState([])
+  const [studentIdTouched, setStudentIdTouched] = useState(false)
+  const [careers, setCareers] = useState([])
+
+  // Sourced from the real backend vocabulary (the same CAREERS data
+  // validation.py derives ALL_SKILLS/ALL_INTERESTS from) so the suggestion
+  // chips can never drift out of sync with what the server actually
+  // recognizes. Silently ignored on failure - suggestions are a
+  // convenience, not a requirement for the form to work.
+  useEffect(() => {
+    let cancelled = false
+    getCareers()
+      .then((data) => {
+        if (!cancelled && data.success) setCareers(data.careers)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const allSkills = useMemo(() => {
+    const set = new Set()
+    careers.forEach((career) => (career.required_skills || []).forEach((skill) => set.add(skill)))
+    return [...set].sort()
+  }, [careers])
+
+  const allInterests = useMemo(() => {
+    const set = new Set()
+    careers.forEach((career) => (career.related_interests || []).forEach((interest) => set.add(interest)))
+    return [...set].sort()
+  }, [careers])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -212,6 +363,13 @@ function Recommendation() {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    if (loading) return // guards against a double-fire from fast repeat clicks/Enter
+
+    setStudentIdTouched(true)
+    const errors = getClientErrors(formData)
+    setClientErrors(errors)
+    if (errors.length > 0) return
+
     setLoading(true)
     setNetworkError('')
     setResult(null)
@@ -227,80 +385,133 @@ function Recommendation() {
     }
   }
 
+  const showStudentIdError = studentIdTouched && !formData.studentId.trim()
+
   return (
     <section className="recommendation-page">
-      <h1>Career Recommendation</h1>
-      <p>Enter your profile details below to receive ranked career recommendations.</p>
+      <div className="assessment-intro">
+        <span className="stat-pill stat-primary">Career Assessment</span>
+        <h1>Discover Your Career Path</h1>
+        <p className="assessment-intro-description">
+          Tell us about your skills, interests, and academic strengths. Our intelligent
+          recommendation system will analyze your inputs and suggest suitable career paths.
+        </p>
+      </div>
 
-      <form className="profile-form" onSubmit={handleSubmit}>
-        <label>
-          Student ID
-          <input
-            type="text"
-            name="studentId"
-            value={formData.studentId}
-            onChange={handleChange}
-            placeholder="e.g. STU001"
-          />
-        </label>
+      <form className="assessment-form" onSubmit={handleSubmit} noValidate>
+        <div className="assessment-section">
+          <h2 className="assessment-section-title">Your Details</h2>
+          <p className="assessment-section-description">
+            Used to identify your submission and personalize your results.
+          </p>
 
-        <label>
-          Name
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Your full name"
-          />
-        </label>
+          <div className="assessment-field-row">
+            <label className="assessment-field">
+              <span className="assessment-field-label">
+                Student ID <span className="required-marker">*</span>
+              </span>
+              <input
+                type="text"
+                name="studentId"
+                value={formData.studentId}
+                onChange={handleChange}
+                onBlur={() => setStudentIdTouched(true)}
+                placeholder="e.g. STU001"
+                aria-invalid={showStudentIdError}
+                aria-describedby={showStudentIdError ? 'student-id-error' : undefined}
+                className={showStudentIdError ? 'input-invalid' : ''}
+              />
+              {showStudentIdError && (
+                <span id="student-id-error" className="field-error">
+                  Student ID is required.
+                </span>
+              )}
+            </label>
 
-        <label>
-          Skills
-          <input
-            type="text"
-            name="skills"
-            value={formData.skills}
-            onChange={handleChange}
+            <label className="assessment-field">
+              <span className="assessment-field-label">Name</span>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Your full name (optional)"
+              />
+            </label>
+          </div>
+        </div>
+
+        <div className="assessment-section">
+          <h2 className="assessment-section-title">Your Skills</h2>
+          <p className="assessment-section-description">
+            Add at least one skill. Type a skill and press Enter, or pick one below — misspelled
+            entries are still accepted and the system will suggest a correction.
+          </p>
+          <ChipInput
+            id="skills-input"
+            values={formData.skills}
+            onChange={(skills) => setFormData((prev) => ({ ...prev, skills }))}
+            suggestions={allSkills}
             placeholder="e.g. Python, SQL, Statistics"
+            ariaLabel="Add a skill"
           />
-          <span className="field-hint">Separate multiple skills with commas.</span>
-        </label>
+        </div>
 
-        <label>
-          Interests
-          <input
-            type="text"
-            name="interests"
-            value={formData.interests}
-            onChange={handleChange}
+        <div className="assessment-section">
+          <h2 className="assessment-section-title">Your Interests</h2>
+          <p className="assessment-section-description">
+            Add at least one interest area. You can select more than one.
+          </p>
+          <ChipInput
+            id="interests-input"
+            values={formData.interests}
+            onChange={(interests) => setFormData((prev) => ({ ...prev, interests }))}
+            suggestions={allInterests}
             placeholder="e.g. Data, Artificial Intelligence"
+            ariaLabel="Add an interest"
           />
-          <span className="field-hint">Separate multiple interests with commas.</span>
-        </label>
+        </div>
 
-        <label>
-          Academic Score
-          <input
-            type="number"
-            name="academicScore"
-            min="0"
-            max="100"
-            value={formData.academicScore}
-            onChange={handleChange}
-            placeholder="0-100"
-          />
-          <span className="field-hint">Optional — leave blank if not available.</span>
-        </label>
+        <div className="assessment-section">
+          <h2 className="assessment-section-title">Academic Performance</h2>
+          <p className="assessment-section-description">
+            Optional. If provided, it contributes to your match score alongside skills and
+            interests.
+          </p>
+          <label className="assessment-field assessment-field-narrow">
+            <span className="assessment-field-label">Academic Score (0–100)</span>
+            <input
+              type="number"
+              name="academicScore"
+              min="0"
+              max="100"
+              value={formData.academicScore}
+              onChange={handleChange}
+              placeholder="0-100"
+            />
+            <span className="field-hint">Leave blank if not available.</span>
+          </label>
+        </div>
 
-        <button type="submit" className="primary-button" disabled={loading}>
+        {clientErrors.length > 0 && (
+          <div className="message-box error-box" role="alert">
+            <h3>Please fix the following</h3>
+            <ul>
+              {clientErrors.map((error) => (
+                <li key={error}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <button type="submit" className="primary-button assessment-submit" disabled={loading} aria-busy={loading}>
           {loading ? (
             <>
               <span className="button-spinner" aria-hidden="true" />
               Analyzing...
             </>
           ) : (
-            'Get Recommendations'
+            'Get My Career Recommendations'
           )}
         </button>
       </form>

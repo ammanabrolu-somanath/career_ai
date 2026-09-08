@@ -4,6 +4,7 @@ from flask_cors import CORS
 from data.careers import CAREERS
 from data.student_profiles import get_student_profile
 from services.graph_algorithms import bfs_traversal, dfs_traversal
+from services.hashing_benchmark import BENCHMARK_DATASET_SIZES, run_hashing_benchmark
 from services.recommendation_engine import recommend_careers
 from services.validation import validate_profile
 
@@ -67,6 +68,38 @@ def get_student_route(student_id):
     if profile is None:
         return jsonify({"success": False, "error": "Student profile not found"}), 404
     return jsonify({"success": True, "profile": profile}), 200
+
+
+@app.route("/api/hashing/benchmark", methods=["GET"])
+def hashing_benchmark_route():
+    """
+    Session 7: real, measured sequential-search-vs-dictionary-lookup
+    timing comparison, run on a synthetic dataset (never the real
+    STUDENTS data). Optional ?size=<n> runs a single dataset size;
+    otherwise every size in BENCHMARK_DATASET_SIZES is run.
+    """
+    size_param = request.args.get("size")
+
+    if size_param is None:
+        results = run_hashing_benchmark()
+        return jsonify({"success": True, "results": results}), 200
+
+    try:
+        size = int(size_param)
+    except ValueError:
+        return jsonify({
+            "success": False,
+            "error": "size must be an integer.",
+        }), 400
+
+    if size not in BENCHMARK_DATASET_SIZES:
+        return jsonify({
+            "success": False,
+            "error": f"size must be one of {BENCHMARK_DATASET_SIZES}.",
+        }), 400
+
+    results = run_hashing_benchmark([size])
+    return jsonify({"success": True, "results": results}), 200
 
 
 @app.route("/api/careers", methods=["GET"])

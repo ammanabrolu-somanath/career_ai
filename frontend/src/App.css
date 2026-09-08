@@ -116,6 +116,12 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
+  transition: background var(--transition-base), border-color var(--transition-base);
+}
+
+.site-menu-toggle:hover {
+  background: var(--accent-soft);
+  border-color: var(--border-hover);
 }
 
 .site-menu-toggle svg {
@@ -233,9 +239,28 @@
   padding: 8px 0 16px;
 }
 
+/* Reverted from a prior pass's `min-height: calc(100svh - 73px)` +
+   justify-content:center: forcing the hero to nearly a full viewport tall
+   and then vertically centering its (much shorter) content put roughly
+   equal empty space both above AND below the CTA - which is exactly what
+   read as heading-crowds-navbar-on-scroll and a huge CTA-to-cards gap.
+   The decorative background doesn't need the hero itself to be tall to
+   avoid a "black gap": .home-liquid-bg (below) is sized to .home's own
+   height, whatever that naturally is, so it always covers hero+cards
+   exactly with no leftover strip. .site-header (72px) + .page-container's
+   own 32px top padding already clear the sticky navbar comfortably, so
+   this only needs a small amount of its own top breathing room - the
+   earlier clamp(48px, 9vh, 88px) added far more than that, which is what
+   pushed the whole hero (and, in turn, the card grid) low enough to crop
+   the bottom row out of the first viewport. A modest bottom padding
+   keeps the CTA close to .home-features (which adds a small margin-top
+   on top of this). */
 .home-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  padding: 40px 0 8px;
+  padding: 8px 0 24px;
 }
 
 /* Decorative liquid backdrop - now a Home-page-wide layer (sibling of
@@ -246,23 +271,42 @@
    column. .home deliberately has no overflow:hidden of its own - the
    project's existing global `body { overflow-x: hidden }` (index.css)
    is the safety net that keeps this from ever causing horizontal
-   scroll, the same pattern any full-bleed section needs. */
+   scroll, the same pattern any full-bleed section needs.
+   top/height are offset by .page-container's own padding-top/bottom
+   (32px/64px here; overridden below to match .page-container's
+   768px/480px breakpoints) - .home-liquid-bg's top:0/height:100% are
+   relative to .home's box only, which sits *inside* .page-container's
+   padding, so without this compensation the padding itself showed as a
+   plain --bg strip directly under the navbar and another above the
+   page's bottom edge, outside the decorative layer's reach. */
 .home-liquid-bg {
   position: absolute;
-  top: 0;
+  top: -32px;
   left: 50%;
   transform: translateX(-50%);
   width: 100vw;
-  height: 100%;
+  height: calc(100% + 32px + 64px);
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
 }
 
+/* Stage 5B correction: the hero fix above makes .home much taller on
+   narrow/tall viewports (tablet/mobile portrait), which - combined with
+   preserveAspectRatio="slice" always fully covering its box by scaling
+   on whichever axis (width or height) needs more zoom - was pushing the
+   scale to be height-driven and cropping away most of the horizontal
+   extent, hiding the edge-hugging left/right waves almost entirely at
+   e.g. 768px width. Locking the SVG's own box to the viewBox's aspect
+   ratio (rather than stretching it to 100% of the much-taller parent)
+   keeps scale width-driven so the full composition stays visible; any
+   leftover space below it within .home-liquid-bg just shows the plain
+   --bg tone, which already matches the composition's own dark edges. */
 .home-liquid-svg {
   display: block;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1440 / 1560;
+  max-height: 100%;
 }
 
 /* Stage 4E: first subtle motion pass. transform-only, CSS @keyframes only
@@ -293,12 +337,81 @@
   }
 }
 
+/* Stage 5B: true shape deformation, layered on top of Stage 4E's
+   transform drift (kept, unchanged). Animates the CSS `d` property -
+   natively interpolatable in current Chrome/Edge/Firefox and Safari
+   16.4+ - between the shape's existing path and a subtly perturbed
+   variant with the exact same command structure (so browsers can
+   interpolate point-by-point rather than needing a shape-matching
+   library). In browsers that don't support animating `d`, the rule is
+   simply ignored and the shape stays at its base geometry while the
+   existing transform-drift animation continues working - a safe
+   degradation, not a broken one. Only the outer-facing half of each
+   ribbon's boundary is perturbed (the values were hand-adjusted from
+   the base path in Home.jsx), so the inner boundary stays anchored and
+   the ripple reads as one edge of the liquid subtly breathing, not the
+   whole shape reshaping uniformly. */
+@keyframes home-liquid-morph-left {
+  0% {
+    d: path("M-20,-20 C220,10 60,160 240,240 C400,310 120,420 280,500 C420,570 140,660 300,740 C420,800 160,880 240,1020 L100,1020 C40,900 220,820 60,740 C-60,660 180,560 40,480 C-80,400 160,320 20,240 C-80,160 140,80 -20,-20 Z");
+  }
+  100% {
+    d: path("M-20,-20 C290,62 -10,230 310,292 C470,362 50,490 350,552 C490,622 70,730 370,792 C490,852 90,950 310,1020 L100,1020 C40,900 220,820 60,740 C-60,660 180,560 40,480 C-80,400 160,320 20,240 C-80,160 140,80 -20,-20 Z");
+  }
+}
+
+@keyframes home-liquid-morph-right {
+  0% {
+    d: path("M1460,-30 C1220,20 1340,150 1180,230 C1040,300 1300,400 1160,480 C1030,550 1290,650 1150,730 C1030,800 1280,870 1200,1010 L1340,1010 C1400,900 1240,820 1380,740 C1480,660 1300,560 1420,480 C1500,400 1320,320 1440,240 C1500,160 1340,80 1460,-30 Z");
+  }
+  100% {
+    d: path("M1460,-30 C1150,3 1410,202 1250,282 C970,370 1370,452 1230,532 C960,602 1360,702 1220,782 C960,852 1350,922 1270,1010 L1340,1010 C1400,900 1240,820 1380,740 C1480,660 1300,560 1420,480 C1500,400 1320,320 1440,240 C1500,160 1340,80 1460,-30 Z");
+  }
+}
+
+@keyframes home-liquid-base-morph-left {
+  0% {
+    d: path("M-60,-60 C260,60 120,320 300,520 C450,680 200,820 280,1060 L-60,1060 Z");
+  }
+  100% {
+    d: path("M-60,-60 C320,120 60,380 360,580 C510,740 140,880 220,1060 L-60,1060 Z");
+  }
+}
+
+@keyframes home-liquid-base-morph-right {
+  0% {
+    d: path("M1500,-60 C1180,60 1320,320 1140,520 C990,680 1240,820 1160,1060 L1500,1060 Z");
+  }
+  100% {
+    d: path("M1500,-60 C1120,120 1380,380 1080,580 C930,740 1300,880 1220,1060 L1500,1060 Z");
+  }
+}
+
+/* Stage 5B correction: durations shortened substantially (54s/63s -> 26s/31s
+   for the main ribbons, 77s/85s -> 40s/46s for the base masses) and morph
+   amplitude roughly tripled (see keyframes above) so the deformation reads
+   as clearly visible motion within a 5-15s observation window, per explicit
+   feedback that the original pass was too subtle to perceive. */
+/* Frozen at the request of the visual-freeze pass: the SVG's authored
+   resting geometry (Home.jsx) is the exact approved target frame, so
+   these four rules no longer run their drift/morph keyframes. Paths,
+   gradients, blur, opacity, and positioning in Home.jsx are untouched -
+   only the animation is turned off, leaving the shapes permanently at
+   their initial d/transform values. */
 .home-liquid-mass-left {
-  animation: home-liquid-drift-left 32s ease-in-out infinite alternate;
+  animation: none;
 }
 
 .home-liquid-mass-right {
-  animation: home-liquid-drift-right 41s ease-in-out infinite alternate;
+  animation: none;
+}
+
+.home-liquid-base-left {
+  animation: none;
+}
+
+.home-liquid-base-right {
+  animation: none;
 }
 
 /* Safety net independent of the exact SVG path coordinates: a centered
@@ -332,7 +445,7 @@
 
 .home-description {
   max-width: 640px;
-  margin: 0 auto 24px;
+  margin: 0 auto 12px;
   font-size: 17px;
 }
 
@@ -340,7 +453,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
-  margin-top: 40px;
+  /* Combined with .home-hero's 24px bottom padding, keeps the CTA-to-grid
+     gap around 32px total (was 40px here, 64px total). */
+  margin-top: 8px;
   text-align: left;
 }
 
@@ -510,6 +625,197 @@
 .comparison-selectors select:hover:not(:focus):not(:disabled),
 .benchmark-size-label select:hover:not(:focus):not(:disabled) {
   border-color: var(--text-muted);
+}
+
+/* ---------- Career assessment page (Recommendation.jsx) ---------- */
+
+.assessment-intro {
+  max-width: 640px;
+  margin: 0 auto 28px;
+  text-align: center;
+}
+
+.assessment-intro h1 {
+  margin-top: 12px;
+}
+
+.assessment-intro-description {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.assessment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.assessment-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+}
+
+.assessment-section-title {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.assessment-section-description {
+  margin: 0 0 16px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.assessment-field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.assessment-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.assessment-field-narrow {
+  max-width: 220px;
+}
+
+.assessment-field-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.required-marker {
+  color: var(--danger);
+}
+
+.assessment-field input {
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.assessment-field input:hover:not(:focus):not(:disabled) {
+  border-color: var(--text-muted);
+}
+
+.assessment-field input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.assessment-field input.input-invalid {
+  border-color: var(--danger);
+}
+
+.field-error {
+  font-size: 12.5px;
+  color: var(--danger);
+}
+
+/* ---------- Chip input (skills / interests) ---------- */
+
+.chip-input-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.chip-input-field:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.chip-input-text {
+  flex: 1;
+  min-width: 140px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-size: 14px;
+  padding: 4px 2px;
+}
+
+.chip-input-text:focus {
+  outline: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 8px 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--primary-soft);
+  color: var(--accent);
+  border: 1px solid var(--border-hover);
+  white-space: nowrap;
+}
+
+.chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.chip-remove:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.chip-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.chip-suggestion {
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: none;
+  border: 1px dashed var(--border-hover);
+  color: var(--text-muted);
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.chip-suggestion:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.assessment-submit {
+  align-self: flex-start;
 }
 
 /* ---------- Results / placeholder sections ---------- */
@@ -1974,6 +2280,11 @@
   .page-container {
     padding: 24px 16px 48px;
   }
+
+  .home-liquid-bg {
+    top: -24px;
+    height: calc(100% + 24px + 48px);
+  }
 }
 
 @media (min-width: 641px) and (max-width: 900px) {
@@ -1996,6 +2307,11 @@
 @media (max-width: 480px) {
   .page-container {
     padding: 20px 12px 40px;
+  }
+
+  .home-liquid-bg {
+    top: -20px;
+    height: calc(100% + 20px + 40px);
   }
 
   /* .graph-controls holds one input plus three buttons (Run BFS / Run
